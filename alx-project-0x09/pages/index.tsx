@@ -5,12 +5,28 @@ import { useState } from "react";
 const Home: React.FC = () => {
   const [prompt, setPrompt] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>("");
-  const [generatedImages, setGeneratedImages] = useState<ImageProps[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleGenerateImage = async () => {
-    console.log("Generating Image");
-    console.log(process.env.NEXT_PUBLIC_GPT_API_KEY);
+    setIsLoading(true);
+    const resp = await fetch("/api/generate-image", {
+      method: "POST",
+      body: JSON.stringify({
+        prompt,
+      }),
+      headers: {
+        "Content-type": "application/json",
+      },
+    });
+
+    if (!resp.ok) {
+      setIsLoading(false);
+      return;
+    }
+
+    const data = await resp.json();
+    console.log("Generated Image URL:", data);
+    setIsLoading(false);
   };
 
   return (
@@ -29,15 +45,12 @@ const Home: React.FC = () => {
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
             placeholder="Enter your prompt here..."
-            className="w-full p-3 border border-gray-300 rounded-lg mb-4"
+            className="w-full p-3 border border-gray-300 rounded-lg mb-4 text-gray-500"
           />
           <button
             onClick={handleGenerateImage}
             className="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200">
-            {/* {
-              isLoading ? "Loading..." : "Generate Image"
-            } */}
-            Generate Image
+            {isLoading ? "Loading..." : "Generate Image"}
           </button>
         </div>
 
